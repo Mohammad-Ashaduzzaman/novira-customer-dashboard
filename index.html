@@ -1,0 +1,354 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Novira — Customer Dashboard (UI uplift)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15171c; --accent:#0f6e56; --mint:#7fd9bd;
+    --canvas:#edf0ee; --surface:#ffffff;
+    --ink-2:#5a616c; --ink-3:#929aa3; --ink-4:#aeb5bd;
+    --hairline:#e7eae8; --hairline-soft:rgba(21,23,28,.05);
+    --rail:#121317; --rail-2:#181a20; --rail-line:rgba(255,255,255,.07);
+    --rail-txt:#9aa1ab; --rail-txt-hi:#e9ece9; --rail-muted:rgba(255,255,255,.34);
+    --pos:#0f6e56; --live:#1f9e7c; --neutral:#7c828c; --warn:#b07a1e; --neg:#bb453c;
+    --pos-t:rgba(15,110,86,.10); --live-t:rgba(31,158,124,.12); --neutral-t:rgba(124,130,140,.12);
+    --warn-t:rgba(176,122,30,.13); --neg-t:rgba(187,69,60,.10);
+    --sh:0 1px 2px rgba(21,23,28,.03), 0 16px 44px -24px rgba(21,23,28,.22);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.45;
+    font-variant-numeric:tabular-nums;
+    background:radial-gradient(1200px 420px at 72% -8%,rgba(127,217,189,.05),transparent 60%),var(--canvas);min-height:100vh}
+  .num{font-feature-settings:"tnum" 1}
+  .app{display:grid;grid-template-columns:266px 1fr;min-height:100vh}
+
+  /* RAIL (dark — explicitly approved) */
+  .side{background:linear-gradient(180deg,var(--rail),var(--rail-2));position:sticky;top:0;height:100vh;display:flex;flex-direction:column;color:var(--rail-txt)}
+  .brand{display:flex;align-items:center;gap:12px;padding:26px 24px 22px}
+  .brand .mark{width:36px;height:36px;border-radius:10px;flex:none;display:grid;place-items:center;color:#dfe4e0;background:linear-gradient(150deg,#23262e,#15171c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 6px 16px -8px rgba(0,0,0,.6)}
+  .brand .name{font-weight:700;font-size:18px;letter-spacing:-.02em;color:#fff;line-height:1}
+  .brand .name span{color:var(--mint)}
+  .brand .tag{font-size:8px;letter-spacing:.2em;color:var(--rail-muted);font-weight:600;margin-top:4px}
+  .nav{padding:10px 14px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1}
+  .nav a{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:10px;color:var(--rail-txt);text-decoration:none;font-weight:500;font-size:13.5px;position:relative;transition:.15s}
+  .nav a svg{width:18px;height:18px;flex:none;stroke-width:1.7;opacity:.85}
+  .nav a:hover{background:rgba(255,255,255,.045);color:var(--rail-txt-hi)}
+  .nav a.active{background:rgba(127,217,189,.10);color:var(--mint);font-weight:600}
+  .nav a.active svg{opacity:1}
+  .nav a.active::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:var(--mint)}
+  .nav a .chev{margin-left:auto;width:15px;height:15px;opacity:.5}
+  .side-foot{padding:12px 14px 18px}
+  .help{display:flex;align-items:center;gap:11px;width:100%;border:1px solid var(--rail-line);background:rgba(255,255,255,.02);padding:11px 13px;border-radius:11px;color:var(--rail-txt);font-weight:600;font-size:13px;cursor:pointer}
+  .help:hover{background:rgba(255,255,255,.05);color:var(--rail-txt-hi)}
+  .help svg{width:17px;height:17px}.help .chev{margin-left:auto;opacity:.5;width:15px;height:15px}
+
+  /* TOPBAR (original elements only) */
+  .main{display:flex;flex-direction:column;min-width:0}
+  .topbar{height:72px;display:flex;align-items:center;gap:14px;padding:0 34px}
+  .burger{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:var(--ink-2);cursor:pointer;margin-left:-6px}
+  .burger:hover{background:rgba(21,23,28,.05);color:var(--ink)}.burger svg{width:21px;height:21px}
+  .page-title{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .spacer{margin-left:auto}
+  .topcluster{display:flex;align-items:center;gap:12px}
+  .plan{display:flex;align-items:center;gap:11px;background:var(--ink);color:#fff;padding:9px 15px;border-radius:11px;box-shadow:var(--sh)}
+  .plan svg{width:16px;height:16px;color:rgba(255,255,255,.62)}
+  .plan .pl-lbl{font-size:9.5px;color:rgba(255,255,255,.55);font-weight:500;line-height:1.1}
+  .plan .pl-val{font-size:13px;font-weight:600;line-height:1.15}
+  .divider{width:1px;height:26px;background:var(--hairline)}
+  .icon-btn{width:42px;height:42px;border-radius:12px;background:var(--surface);display:grid;place-items:center;color:var(--ink-2);cursor:pointer;position:relative;box-shadow:0 1px 2px rgba(21,23,28,.05)}
+  .icon-btn:hover{color:var(--ink)}.icon-btn svg{width:18px;height:18px}
+  .badge{position:absolute;top:-4px;right:-4px;background:var(--neg);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;border:2px solid var(--canvas)}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1b8567);box-shadow:0 2px 8px -2px rgba(15,110,86,.5);border:2px solid #fff}
+
+  /* CONTENT — original equal 2-column grid, original order */
+  .content{padding:10px 34px 48px;display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+
+  .zone{display:flex;flex-direction:column;opacity:0;transform:translateY(8px);animation:rise .5s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .zone:nth-child(1){animation-delay:.03s}.zone:nth-child(2){animation-delay:.08s}
+  .zone:nth-child(3){animation-delay:.13s}.zone:nth-child(4){animation-delay:.18s}
+  .zone:nth-child(5){animation-delay:.23s}.zone:nth-child(6){animation-delay:.28s}
+  .zone-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px 13px}
+  .zone-title{font-size:14px;font-weight:700;letter-spacing:-.005em;color:var(--ink)}
+  .zone-tools{display:flex;align-items:center;gap:2px}
+  .tool{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--ink-4);cursor:pointer}
+  .tool:hover{background:rgba(21,23,28,.05);color:var(--ink-2)}.tool svg{width:15px;height:15px;stroke-width:1.7}
+  .panel{background:var(--surface);border-radius:15px;box-shadow:var(--sh);padding:26px 28px 12px}
+  .panel.flush{padding-bottom:22px}
+
+  .stats{display:grid;margin-bottom:20px}
+  .stats.c5{grid-template-columns:repeat(5,1fr)}
+  .stats.c6{grid-template-columns:repeat(6,1fr)}
+  .stat{padding:2px 14px 12px;position:relative;cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
+  .stat:not(:last-child)::after{content:"";position:absolute;right:0;top:6px;bottom:14px;width:1px;background:var(--hairline)}
+  .stat .s-lbl{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);min-height:24px;line-height:1.25}
+  .stat .dot{width:6px;height:6px;border-radius:50%;flex:none}
+  .stat .s-val{font-size:32px;font-weight:600;letter-spacing:-.035em;line-height:1;color:#aeb4bc;margin-top:10px;transition:color .15s}
+  .stat:hover .s-val{color:var(--ink-2)}
+  .stat.on .s-val{color:var(--ink)}
+  .stat.on{border-bottom-color:var(--accent)}
+  .dot.pos{background:var(--pos)}.dot.live{background:var(--live)}.dot.neutral{background:var(--neutral)}.dot.warn{background:var(--warn)}.dot.neg{background:var(--neg)}.dot.mint{background:var(--mint)}
+
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:0 14px 12px}
+  tbody td{padding:14px;font-size:13px;color:var(--ink-2);vertical-align:middle}
+  tbody tr{transition:background .12s}
+  tbody tr:hover td{background:#f7f9f8}
+  tbody tr:hover td:first-child{border-radius:8px 0 0 8px}
+  tbody tr:hover td:last-child{border-radius:0 8px 8px 0}
+  .mono{font-weight:600;color:var(--ink);letter-spacing:-.01em}
+  .sub{font-size:12px;color:var(--ink-3)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px}
+  .pill .d{width:6px;height:6px;border-radius:50%}
+  .pill.pos{color:var(--pos);background:var(--pos-t)}.pill.pos .d{background:var(--pos)}
+  .pill.warn{color:var(--warn);background:var(--warn-t)}.pill.warn .d{background:var(--warn)}
+  .pill.neg{color:var(--neg);background:var(--neg-t)}.pill.neg .d{background:var(--neg)}
+  .pill.live{color:var(--live);background:var(--live-t)}.pill.live .d{background:var(--live)}
+  .pill.neutral{color:var(--neutral);background:var(--neutral-t)}.pill.neutral .d{background:var(--neutral)}
+  .link{color:var(--accent);font-weight:600;cursor:pointer}
+  .batt{display:inline-flex;align-items:center;gap:6px;color:var(--neg);font-weight:600;font-size:12px}.batt svg{width:18px;height:18px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;font-weight:600;font-size:12.5px;cursor:pointer;border:1px solid transparent;font-family:inherit}
+  .btn-ghost{padding:6px 10px;color:var(--accent);background:transparent}.btn-ghost:hover{background:var(--pos-t)}
+  .btn-out{padding:9px 16px;color:var(--ink);background:var(--surface);border:1px solid var(--hairline)}
+  .btn-out:hover{border-color:#d7dcd9;background:#f8faf9}
+  .zone-foot{display:flex;justify-content:flex-end;padding:14px 4px 0}
+
+  .seg{display:inline-flex;background:#f3f5f4;border-radius:11px;padding:3px;margin-bottom:6px}
+  .seg button{display:flex;align-items:center;gap:7px;border:none;background:transparent;font-family:inherit;font-weight:600;font-size:12.5px;color:var(--ink-3);padding:7px 15px;border-radius:8px;cursor:pointer}
+  .seg button svg{width:14px;height:14px}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(21,23,28,.10)}.seg button.on .star{color:var(--warn)}
+  .alert-row{display:flex;gap:14px;padding:16px 0}
+  .alert-row+.alert-row{border-top:1px solid var(--hairline-soft)}
+  .alert-row .ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none}.alert-row .ic svg{width:17px;height:17px}
+  .ic.light{background:var(--warn-t);color:var(--warn)}.ic.temp{background:var(--neg-t);color:var(--neg)}
+  .alert-row .ttl{font-weight:600;color:var(--ink);font-size:13px}.alert-row .ttl .id{color:var(--ink-3);font-weight:500;margin-left:5px}
+  .alert-row .desc{font-size:12.5px;color:var(--ink-2);margin-top:3px}.alert-row .desc b{color:var(--ink);font-weight:600}
+  .alert-row .ts{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-4);margin-top:7px}.alert-row .ts svg{width:12px;height:12px}
+
+  .map{position:relative;height:330px;border-radius:13px;overflow:hidden;background:radial-gradient(130% 100% at 28% 18%,#22262f 0%,#181b21 55%,#121317 100%)}
+  .road{position:absolute;background:rgba(127,217,189,.09);border-radius:99px}
+  .water{position:absolute;border-radius:42% 58% 55% 45%;background:rgba(40,80,75,.26);filter:blur(1px)}
+  .pin{position:absolute;transform:translate(-50%,-100%)}.pin svg{width:42px;height:42px;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
+  .stn{position:absolute;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);display:grid;place-items:center;color:#cdd6d2;transform:translate(-50%,-50%)}.stn svg{width:11px;height:11px}
+  .full{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.10);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#dfe7e4;cursor:pointer}.full svg{width:16px;height:16px}
+  .attr{position:absolute;bottom:9px;left:12px;font-size:9.5px;color:rgba(255,255,255,.32)}
+  .note{grid-column:1/-1;font-size:11px;color:var(--ink-4);text-align:center;padding-top:6px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- RAIL -->
+  <aside class="side">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg></div>
+      <div><div class="name">NOVIRA<span>.ai</span></div><div class="tag">TRUST WHAT YOU TRACK</div></div>
+    </div>
+    <nav class="nav">
+      <a class="active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Trackers</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7h11v8H3z"/><path d="M14 10h4l3 3v2h-7z"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/></svg>Shipments</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 8h13v9H2z"/><path d="M15 11h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>Fleets</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>Drivers</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg>Alerts</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg>Notifications</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6c2-2 6-2 8 0 2-2 6-2 8 0v12c-2-2-6-2-8 0-2-2-6-2-8 0V6z"/></svg>Widgets</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 5h18v4H3z"/><path d="M5 9v10h14V9"/><path d="M9 13h6"/></svg>Orders</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Access Control<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg></a>
+    </nav>
+    <div class="side-foot"><button class="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>Help &amp; Support<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg></button></div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <span class="burger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+      <span class="page-title">Dashboard</span>
+      <span class="spacer"></span>
+      <div class="topcluster">
+        <div class="plan"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7l4 3 5-6 5 6 4-3-2 12H5L3 7z"/></svg><div><div class="pl-lbl">Current Plan</div><div class="pl-val">Ai Navigator</div></div></div>
+        <span class="divider"></span>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg><span class="badge">99+</span></button>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+        <div class="avatar"></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- TRACKERS (top-left, original position) -->
+      <section class="zone">
+        <div class="zone-head"><div class="zone-title">Trackers</div>
+          <div class="zone-tools">
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg></span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="stats c5">
+            <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All Trackers</div><div class="s-val num">9</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Pending Setup</div><div class="s-val num">2</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot live"></span>Live · Unlinked</div><div class="s-val num">7</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Live · Linked</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Offline</div><div class="s-val num">2</div></div>
+          </div>
+          <table>
+            <thead><tr><th>Tracker ID</th><th>Tracker Type</th><th>Status</th><th>Battery</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="mono">TRAC#929977</td><td class="sub">NovaEdge</td><td></td><td></td><td style="text-align:right"><span class="btn btn-ghost">View Details</span></td></tr>
+              <tr><td class="mono">TRAC#310760</td><td class="sub">NovaEdge</td><td></td><td></td><td style="text-align:right"><span class="btn btn-ghost">View Details</span></td></tr>
+              <tr><td class="mono">TRAC#768010</td><td class="sub">NovaLite</td><td></td><td></td><td style="text-align:right"><span class="btn btn-ghost">View Details</span></td></tr>
+              <tr><td class="mono">TRAC#880002</td><td class="sub">NovaEdge</td><td></td><td></td><td style="text-align:right"><span class="btn btn-ghost">View Details</span></td></tr>
+              <tr><td class="mono">TRAC#728595</td><td class="sub">NovaLite</td><td></td><td></td><td style="text-align:right"><span class="btn btn-ghost">View Details</span></td></tr>
+              <tr><td class="mono">TRAC#591616</td><td class="sub">NovaFive</td><td><span class="pill neg"><span class="d"></span>Offline</span></td><td><span class="batt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="8" width="16" height="8" rx="2"/><path d="M20 11v2"/></svg>0%</span></td><td style="text-align:right"><span class="btn btn-ghost">View Details</span></td></tr>
+              <tr><td class="mono">TRAC#865656</td><td class="sub">NovaFive</td><td><span class="pill neg"><span class="d"></span>Offline</span></td><td><span class="batt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="8" width="16" height="8" rx="2"/><path d="M20 11v2"/></svg>0%</span></td><td style="text-align:right"><span class="btn btn-ghost">View Details</span></td></tr>
+            </tbody>
+          </table>
+          <div class="zone-foot"><span class="btn btn-out">View Tracker Page</span></div>
+        </div>
+      </section>
+
+      <!-- SHIPMENTS (top-right, original position) -->
+      <section class="zone">
+        <div class="zone-head"><div class="zone-title">Shipments</div>
+          <div class="zone-tools">
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg></span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="stats c6">
+            <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All</div><div class="s-val num">13</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot live"></span>Upcoming</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>In Transit</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Delayed</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Completed</div><div class="s-val num">11</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Canceled</div><div class="s-val num">1</div></div>
+          </div>
+          <table>
+            <thead><tr><th>Shipment ID</th><th>Status</th><th>Origin</th><th>Destination</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">SHIP#384580</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="sub">3325 San Pablo Ct, Union City, CA</td><td class="sub">300 G… Fremo…</td></tr>
+              <tr><td class="mono">SHIP#439419</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="sub">3325 San Pablo Ct, Union City, CA</td><td class="sub">300 G… Fremo…</td></tr>
+              <tr><td class="mono">SHIP#559138</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="sub">3325 San Pablo Ct, Union City, CA</td><td class="sub">300 G… Fremo…</td></tr>
+              <tr><td class="mono">SHIP#603538</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="sub">3325 San Pablo Court, Union City, CA</td><td class="sub">Tracy, …</td></tr>
+              <tr><td class="mono">SHIP#507327</td><td><span class="pill live"><span class="d"></span>Upcoming</span></td><td class="sub">22290 Hathaway Avenue, Hayward, CA</td><td class="sub">666 Be… Oaklan…</td></tr>
+              <tr><td class="mono">SHIP#3686</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="sub">4545 Macbeth Avenue, Fremont, CA</td><td class="sub">666 V… CA, US…</td></tr>
+              <tr><td class="mono">SHIP#5456</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="sub">5555 Cedar Court Hotel, Newark, CA…</td><td class="sub">4546 P… Fremo…</td></tr>
+              <tr><td class="mono">SHIP#5148</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="sub">4545 Chabot Drive, Pleasanton, CA</td><td class="sub">545 Sa… Mount…</td></tr>
+            </tbody>
+          </table>
+          <div class="zone-foot"><span class="btn btn-out">View Shipment Page</span></div>
+        </div>
+      </section>
+
+      <!-- FLEETS (mid-left, original position) -->
+      <section class="zone">
+        <div class="zone-head"><div class="zone-title">Fleets</div>
+          <div class="zone-tools">
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg></span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="stats c6">
+            <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Linked</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>Not Linked</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot live"></span>Moving</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Idle</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Stopped</div><div class="s-val num">0</div></div>
+          </div>
+          <table>
+            <thead><tr><th>Fleet ID</th><th>Type</th><th>Status</th><th>License Plate</th><th>Total Shipments</th></tr></thead>
+            <tbody><tr><td class="mono">FLEET#9230</td><td class="sub">truck</td><td><span class="pill live"><span class="d"></span>Moving</span></td><td class="mono">FAUJ</td><td><span class="link">3</span></td></tr></tbody>
+          </table>
+          <div class="zone-foot"><span class="btn btn-out">View Fleet Page</span></div>
+        </div>
+      </section>
+
+      <!-- DRIVERS (mid-right, original position) -->
+      <section class="zone">
+        <div class="zone-head"><div class="zone-title">Drivers</div>
+          <div class="zone-tools">
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H3v-5a2 2 0 012-2h14a2 2 0 012 2v5h-3"/></svg></span>
+            <span class="tool"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg></span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="stats c5">
+            <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>Total Drivers</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Active / On</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>Inactive / Off</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Flagged</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Pending Doc.</div><div class="s-val num">0</div></div>
+          </div>
+          <table>
+            <thead><tr><th>Driver ID</th><th>Status</th><th>Total Shipment</th><th>Last Update</th></tr></thead>
+            <tbody><tr><td class="mono">DRIVER#4960</td><td><span class="pill pos"><span class="d"></span>Active / On</span></td><td><span class="link">3</span></td><td class="sub">Mar 18 2026 · 10:14 PM</td></tr></tbody>
+          </table>
+          <div class="zone-foot"><span class="btn btn-out">View Driver Page</span></div>
+        </div>
+      </section>
+
+      <!-- ALERTS OVERVIEW (bottom-left, original position) -->
+      <section class="zone">
+        <div class="zone-head"><div class="zone-title">Alerts Overview</div></div>
+        <div class="panel flush">
+          <div class="seg">
+            <button class="on"><svg class="star" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7z"/></svg>Active</button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="var(--warn)"/></svg>Priority</button>
+          </div>
+          <div>
+            <div class="alert-row"><span class="ic light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.4 1.4M16.6 16.6L18 18M6 18l1.4-1.4M16.6 7.4L18 6"/></svg></span>
+              <div><div class="ttl">Low Light Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment dropped below 10 Lux. Current: <b>1 Lux</b>.</div><div class="ts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Jun 01 2026, 09:39:02 AM</div></div></div>
+            <div class="alert-row"><span class="ic light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.4 1.4M16.6 16.6L18 18M6 18l1.4-1.4M16.6 7.4L18 6"/></svg></span>
+              <div><div class="ttl">Low Light Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment dropped below 10 Lux. Current: <b>0.5 Lux</b>.</div><div class="ts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Jun 01 2026, 06:44:01 AM</div></div></div>
+            <div class="alert-row"><span class="ic temp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13V5a2 2 0 014 0v8a4 4 0 11-4 0z"/></svg></span>
+              <div><div class="ttl">High Temperature Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment exceeded 90°F. Current: <b>90.068°F</b>.</div><div class="ts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>May 31 2026, 07:49:55 PM</div></div></div>
+            <div class="alert-row"><span class="ic temp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13V5a2 2 0 014 0v8a4 4 0 11-4 0z"/></svg></span>
+              <div><div class="ttl">High Temperature Alert<span class="id">TRAC#865656</span></div><div class="desc">Shipment exceeded 90°F.</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRACKERS MAP (bottom-right, original position) -->
+      <section class="zone">
+        <div class="zone-head"><div class="zone-title">Trackers Map</div>
+          <div class="zone-tools"><span class="tool"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg></span></div>
+        </div>
+        <div class="panel flush">
+          <div class="map">
+            <div class="road" style="top:30%;left:-10%;width:75%;height:16px;transform:rotate(-18deg)"></div>
+            <div class="road" style="top:55%;left:10%;width:100%;height:14px;transform:rotate(10deg)"></div>
+            <div class="road" style="top:5%;left:60%;width:10px;height:90%;transform:rotate(6deg)"></div>
+            <div class="road" style="top:20%;left:22%;width:9px;height:70%;transform:rotate(14deg)"></div>
+            <div class="water" style="top:6%;left:6%;width:165px;height:120px"></div>
+            <div class="pin" style="top:44%;left:34%"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z" fill="#0f6e56" stroke="#7fd9bd" stroke-width="1.3"/><path d="M12 6.5l3 1.6v1.9c0 1.9-1.3 3-3 3.4-1.7-.4-3-1.5-3-3.4V8.1z" fill="#7fd9bd"/></svg></div>
+            <div class="stn" style="top:42%;left:74%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="12" height="13" rx="2"/><path d="M8 21l2-3M16 21l-2-3"/></svg></div>
+            <div class="stn" style="top:60%;left:84%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="12" height="13" rx="2"/><path d="M8 21l2-3M16 21l-2-3"/></svg></div>
+            <div class="full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+            <div class="attr">Map data ©2026 Google</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="note">Strict UI uplift · original structure, order, hierarchy &amp; navigation preserved 1:1 · only skin (color, type, spacing, shadows, borders, icons, radius, density, elevation) modernized.</div>
+
+    </main>
+  </div>
+</div>
+<script src="prototype-links.js"></script>
+</body>
+</html>

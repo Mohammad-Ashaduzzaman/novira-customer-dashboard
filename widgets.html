@@ -1,0 +1,460 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Novira — Widgets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15171c; --ink-2:#5a616c; --ink-3:#929aa3; --ink-4:#aeb5bd;
+    --canvas:#edf0ee; --surface:#ffffff; --surface-2:#f7f9f8;
+    --hairline:#e7eae8; --hairline-soft:rgba(21,23,28,.05);
+    --accent:#0f6e56; --accent-2:#1b8567; --mint:#7fd9bd;
+    --rail:#121317; --rail-2:#181a20; --rail-line:rgba(255,255,255,.07); --rail-txt:#9aa1ab; --rail-txt-hi:#e9ece9; --rail-muted:rgba(255,255,255,.34);
+    --pos:#0f6e56; --live:#1f9e7c; --neutral:#7c828c; --warn:#b07a1e; --neg:#bb453c;
+    --pos-t:rgba(15,110,86,.10); --live-t:rgba(31,158,124,.12); --neutral-t:rgba(124,130,140,.12); --warn-t:rgba(176,122,30,.13); --neg-t:rgba(187,69,60,.10);
+    --r-panel:15px; --r-ctrl:12px; --r-sm:8px; --r-pill:999px;
+    --sh:0 1px 2px rgba(21,23,28,.03), 0 16px 44px -24px rgba(21,23,28,.22);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased}
+  body{font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums;
+    background:radial-gradient(1200px 420px at 72% -8%,rgba(127,217,189,.05),transparent 60%),var(--canvas);min-height:100vh}
+  .num{font-feature-settings:"tnum" 1}
+  .app{display:grid;grid-template-columns:266px 1fr;min-height:100vh}
+
+  .side{background:linear-gradient(180deg,var(--rail),var(--rail-2));position:sticky;top:0;height:100vh;display:flex;flex-direction:column;color:var(--rail-txt)}
+  .brand{display:flex;align-items:center;gap:12px;padding:26px 24px 22px}
+  .brand .mark{width:36px;height:36px;border-radius:10px;flex:none;display:grid;place-items:center;color:#dfe4e0;background:linear-gradient(150deg,#23262e,#15171c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 6px 16px -8px rgba(0,0,0,.6)}
+  .brand .name{font-weight:700;font-size:18px;letter-spacing:-.02em;color:#fff;line-height:1}.brand .name span{color:var(--mint)}
+  .brand .tag{font-size:8px;letter-spacing:.2em;color:var(--rail-muted);font-weight:600;margin-top:4px}
+  .nav{padding:10px 14px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;flex:1}
+  .nav a{display:flex;align-items:center;gap:13px;padding:10px 12px;border-radius:10px;color:var(--rail-txt);text-decoration:none;font-weight:500;font-size:13.5px;position:relative;transition:.15s}
+  .nav a svg{width:18px;height:18px;flex:none;stroke-width:1.7;opacity:.85}
+  .nav a:hover{background:rgba(255,255,255,.045);color:var(--rail-txt-hi)}
+  .nav a.active{background:rgba(127,217,189,.10);color:var(--mint);font-weight:600}
+  .nav a.active svg{opacity:1}
+  .nav a.active::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 3px 3px 0;background:var(--mint)}
+  .nav a .chev{margin-left:auto;width:15px;height:15px;opacity:.5}
+  .side-foot{padding:12px 14px 18px}
+  .help{display:flex;align-items:center;gap:11px;width:100%;border:1px solid var(--rail-line);background:rgba(255,255,255,.02);padding:11px 13px;border-radius:11px;color:var(--rail-txt);font-weight:600;font-size:13px;cursor:pointer}
+  .help:hover{background:rgba(255,255,255,.05);color:var(--rail-txt-hi)}.help svg{width:17px;height:17px}.help .chev{margin-left:auto;opacity:.5;width:15px;height:15px}
+
+  .main{display:flex;flex-direction:column;min-width:0}
+  .topbar{height:72px;display:flex;align-items:center;gap:14px;padding:0 34px}
+  .back{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--ink-2);cursor:pointer;background:var(--surface);box-shadow:0 1px 2px rgba(21,23,28,.05);border:none}
+  .back:hover{color:var(--ink)}.back svg{width:19px;height:19px}
+  .page-title{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .spacer{margin-left:auto}
+  .topcluster{display:flex;align-items:center;gap:12px}
+  .plan{display:flex;align-items:center;gap:11px;background:var(--ink);color:#fff;padding:9px 15px;border-radius:11px;box-shadow:var(--sh)}
+  .plan svg{width:16px;height:16px;color:rgba(255,255,255,.62)}
+  .plan .pl-lbl{font-size:9.5px;color:rgba(255,255,255,.55);font-weight:500;line-height:1.1}
+  .plan .pl-val{font-size:13px;font-weight:600;line-height:1.15}
+  .divider{width:1px;height:26px;background:var(--hairline)}
+  .icon-btn{width:42px;height:42px;border-radius:12px;background:var(--surface);display:grid;place-items:center;color:var(--ink-2);cursor:pointer;position:relative;box-shadow:0 1px 2px rgba(21,23,28,.05);border:none}
+  .icon-btn:hover{color:var(--ink)}.icon-btn svg{width:18px;height:18px}
+  .badge{position:absolute;top:-4px;right:-4px;background:var(--neg);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;border:2px solid var(--canvas)}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1b8567);box-shadow:0 2px 8px -2px rgba(15,110,86,.5);border:2px solid #fff}
+
+  /* content = subnav + widgets */
+  .content{padding:6px 34px 48px;display:grid;grid-template-columns:232px 1fr;gap:24px;align-items:start}
+  .panel{background:var(--surface);border-radius:var(--r-panel);box-shadow:var(--sh)}
+
+  .subnav{position:sticky;top:18px;padding:16px}
+  .wsearch{position:relative;margin-bottom:14px}
+  .wsearch svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-4)}
+  .wsearch input{width:100%;font-family:inherit;font-size:13px;color:var(--ink);background:var(--surface-2);border:1px solid var(--hairline);border-radius:var(--r-ctrl);padding:9px 12px 9px 36px}
+  .wsearch input::placeholder{color:var(--ink-4)}
+  .wsearch input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--pos-t)}
+  .wnav{display:flex;flex-direction:column;gap:3px}
+  .wnav a{display:block;padding:10px 13px;border-radius:10px;text-decoration:none;color:var(--ink-2);font-weight:500;font-size:13.5px}
+  .wnav a:hover{background:var(--surface-2)}
+  .wnav a.active{background:var(--pos-t);color:var(--accent);font-weight:600}
+
+  .widgets{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .group-title{font-size:17px;font-weight:700;letter-spacing:-.02em;margin:14px 2px 2px}
+  .group-title:first-child{margin-top:2px}
+  .wcard{background:var(--surface);border-radius:var(--r-panel);box-shadow:var(--sh);padding:20px}
+  .whead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .wtitle{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .plus{width:28px;height:28px;border-radius:8px;border:1px solid var(--hairline);background:var(--surface);display:grid;place-items:center;color:var(--ink-3);cursor:pointer}
+  .plus:hover{color:var(--ink-2);background:var(--surface-2)}.plus svg{width:15px;height:15px}
+
+  /* stat strip */
+  .stats{display:grid}
+  .stats.c5{grid-template-columns:repeat(5,1fr)}.stats.c6{grid-template-columns:repeat(6,1fr)}
+  .stat{padding:2px 16px 12px;position:relative;border-bottom:2px solid transparent}
+  .stat:not(:last-child)::after{content:"";position:absolute;right:0;top:6px;bottom:14px;width:1px;background:var(--hairline)}
+  .stat .s-lbl{display:flex;align-items:center;gap:7px;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);min-height:20px;line-height:1.2}
+  .stat .dot{width:7px;height:7px;border-radius:50%;flex:none}
+  .stat .s-val{font-size:30px;font-weight:600;letter-spacing:-.035em;line-height:1;color:#aeb4bc;margin-top:9px}
+  .stat.on{border-bottom-color:var(--accent)}.stat.on .s-val{color:var(--ink)}
+  .dot.pos{background:var(--pos)}.dot.live{background:var(--live)}.dot.neutral{background:var(--neutral)}.dot.warn{background:var(--warn)}.dot.neg{background:var(--neg)}
+  .caption{font-size:12px;color:var(--ink-3);margin-top:14px}
+
+  /* controls */
+  .ctrlrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .stoggle{width:40px;height:40px;border:1px solid var(--hairline);border-radius:var(--r-ctrl);display:grid;place-items:center;color:var(--ink-3);cursor:pointer;background:var(--surface)}
+  .stoggle svg{width:18px;height:18px}
+  .stoggle.on{background:var(--pos-t);border-color:transparent;color:var(--accent)}
+  .sp{flex:1}
+  .sel{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface-2);border:1px solid var(--hairline);border-radius:var(--r-ctrl);padding:9px 12px;font-size:13px;color:var(--ink-2);cursor:pointer;min-width:140px}
+  .sel svg{width:14px;height:14px;color:var(--ink-4)}
+  .field{position:relative;min-width:180px}
+  .field .inp{display:block;font-size:13px;color:var(--ink-3);background:var(--surface-2);border:1px solid var(--hairline);border-radius:var(--r-ctrl);padding:9px 36px 9px 12px}
+  .field svg{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-4)}
+  .field.search .inp{padding-left:34px}.field.search .sicon{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--ink-4)}
+
+  /* map */
+  .map{position:relative;height:330px;border-radius:13px;overflow:hidden;background:radial-gradient(130% 100% at 28% 18%,#22262f,#181b21 55%,#121317)}
+  .road{position:absolute;background:rgba(127,217,189,.09);border-radius:99px}
+  .water{position:absolute;border-radius:42% 58% 55% 45%;background:rgba(40,80,75,.26);filter:blur(1px)}
+  .pin{position:absolute;transform:translate(-50%,-100%)}.pin svg{width:40px;height:40px;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
+  .stn{position:absolute;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);display:grid;place-items:center;color:#cdd6d2;transform:translate(-50%,-50%)}.stn svg{width:10px;height:10px}
+  .full{position:absolute;top:13px;right:13px;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.10);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#dfe7e4;cursor:pointer}.full svg{width:15px;height:15px}
+  .recenter{position:absolute;bottom:14px;right:14px;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.10);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#dfe7e4;cursor:pointer}.recenter svg{width:15px;height:15px}
+  .attr{position:absolute;bottom:9px;left:12px;font-size:9.5px;color:rgba(255,255,255,.32)}
+
+  /* tables */
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-4);padding:0 12px 11px;white-space:nowrap}
+  tbody td{padding:12px;font-size:12.5px;color:var(--ink-2);vertical-align:middle;white-space:nowrap}
+  tbody tr{transition:background .12s}
+  tbody tr:hover td{background:var(--surface-2)}
+  tbody tr:hover td:first-child{border-radius:8px 0 0 8px}
+  tbody tr:hover td:last-child{border-radius:0 8px 8px 0}
+  .mono{font-weight:600;color:var(--ink);letter-spacing:-.01em}
+  .sub{color:var(--ink-3)}
+  .dash{color:var(--ink-4)}
+  .dt2 .d1{color:var(--ink);font-weight:500}.dt2 .d2{color:var(--ink-3);font-size:11px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:var(--r-pill)}
+  .pill .d{width:6px;height:6px;border-radius:50%}
+  .pill.pos{color:var(--pos);background:var(--pos-t)}.pill.pos .d{background:var(--pos)}
+  .pill.live{color:var(--live);background:var(--live-t)}.pill.live .d{background:var(--live)}
+  .btn-ghost{display:inline-flex;align-items:center;justify-content:center;color:var(--accent);font-weight:600;font-size:12.5px;cursor:pointer;background:none;border:none;font-family:inherit;padding:6px 8px;border-radius:8px}
+  .btn-ghost:hover{background:var(--pos-t)}
+  .btn-out{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--surface);color:var(--ink);border:1px solid var(--hairline);border-radius:var(--r-sm);padding:7px 13px;font-family:inherit;font-weight:600;font-size:12px;cursor:pointer}
+  .btn-out:hover{border-color:#d7dcd9;background:var(--surface-2)}
+
+  /* chips */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{padding:7px 14px;border-radius:var(--r-pill);font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--hairline);background:var(--surface);color:var(--ink-2)}
+  .chip.on{background:var(--accent);color:#fff;border-color:transparent}
+
+  /* timeline */
+  .tl thead th{text-align:center}
+  .tl thead th:first-child{text-align:left}
+  .tl td{text-align:center;white-space:nowrap;padding:14px 10px}
+  .tl td:first-child{text-align:left}
+  .tick{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff}
+  .tick svg{width:14px;height:14px}
+  .tick.done{background:var(--pos)}.tick.none{background:var(--ink-4)}
+  .tl .ts{font-size:10.5px;color:var(--ink-3);margin-top:6px;line-height:1.3}
+
+  .empty{height:200px;display:grid;place-items:center;color:var(--ink-3);font-weight:600;font-size:13px}
+  .note{font-size:11px;color:var(--ink-4);text-align:center;padding-top:10px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg></div>
+      <div><div class="name">NOVIRA<span>.ai</span></div><div class="tag">TRUST WHAT YOU TRACK</div></div>
+    </div>
+    <nav class="nav">
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Trackers</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7h11v8H3z"/><path d="M14 10h4l3 3v2h-7z"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/></svg>Shipments</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 8h13v9H2z"/><path d="M15 11h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg>Fleets</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg>Drivers</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg>Alerts</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg>Notifications</a>
+      <a class="active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6c2-2 6-2 8 0 2-2 6-2 8 0v12c-2-2-6-2-8 0-2-2-6-2-8 0V6z"/></svg>Widgets</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 5h18v4H3z"/><path d="M5 9v10h14V9"/><path d="M9 13h6"/></svg>Orders</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Reports</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Access Control<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg></a>
+    </nav>
+    <div class="side-foot"><button class="help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>Help &amp; Support<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6"/></svg></button></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <span class="page-title">Widgets</span>
+      <span class="spacer"></span>
+      <div class="topcluster">
+        <div class="plan"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7l4 3 5-6 5 6 4-3-2 12H5L3 7z"/></svg><div><div class="pl-lbl">Current Plan</div><div class="pl-val">Ai Navigator</div></div></div>
+        <span class="divider"></span>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg><span class="badge">99+</span></button>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+        <div class="avatar"></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- WIDGETS SUB-NAV -->
+      <aside class="panel subnav">
+        <div class="wsearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input placeholder="Search Widgets" /></div>
+        <nav class="wnav">
+          <a class="active" href="#">All Widgets</a>
+          <a href="#">Sensor Data</a>
+          <a href="#">Shipments</a>
+          <a href="#">Fleets</a>
+        </nav>
+      </aside>
+
+      <!-- WIDGETS COLUMN -->
+      <div class="widgets">
+
+        <div class="group-title">Sensor Data Widgets</div>
+
+        <!-- Sensor Status Overview -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Sensor Status Overview</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="stats c5">
+            <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All Trackers</div><div class="s-val num">9</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Pending Setup</div><div class="s-val num">2</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot live"></span>Live (Unlinked)</div><div class="s-val num">7</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Live (Linked)</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Offline</div><div class="s-val num">2</div></div>
+          </div>
+        </div>
+
+        <!-- Sensor View by Tracker -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Sensor View by Tracker</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="ctrlrow">
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13V5a2 2 0 014 0v8a4 4 0 11-4 0z"/></svg></span>
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3s6 7 6 11a6 6 0 11-12 0c0-4 6-11 6-11z"/></svg></span>
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.4 1.4M16.6 16.6L18 18M6 18l1.4-1.4M16.6 7.4L18 6"/></svg></span>
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h3l2-5 4 10 2-5h5"/></svg></span>
+            <span class="stoggle on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+            <span class="sp"></span>
+            <span class="sel" style="min-width:150px">Tracker<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            <div class="field"><span class="inp">Select Date</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></div>
+          </div>
+          <div class="map">
+            <div class="road" style="top:28%;left:-10%;width:80%;height:14px;transform:rotate(-12deg)"></div>
+            <div class="road" style="top:64%;left:0;width:100%;height:16px;transform:rotate(6deg)"></div>
+            <div class="road" style="top:5%;left:66%;width:10px;height:92%;transform:rotate(8deg)"></div>
+            <div class="water" style="top:60%;right:2%;width:240px;height:150px"></div>
+            <div class="stn" style="top:40%;left:50%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="12" height="13" rx="2"/><path d="M8 21l2-3M16 21l-2-3"/></svg></div>
+            <div class="full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+            <div class="recenter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div class="attr">Map data ©2026 Google</div>
+          </div>
+        </div>
+
+        <!-- Sensor Event History -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Sensor Event History</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="sub" style="margin-bottom:12px;font-weight:600">Tracker:</div>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Date/Time</th><th>Location</th><th>Action</th><th></th><th></th><th></th><th></th></tr></thead>
+              <tbody>
+                <tr><td class="sub">2025-03-18 10:00</td><td>New York</td><td>22°C</td><td class="num">60%</td><td>Low</td><td>Normal</td><td style="text-align:right"><span class="btn-ghost">View</span></td></tr>
+                <tr><td class="sub">2025-03-18 10:05</td><td>Los Angeles</td><td>25°C</td><td class="num">55%</td><td>Medium</td><td>Bright</td><td style="text-align:right"><span class="btn-ghost">View</span></td></tr>
+                <tr><td class="sub">2025-03-18 10:10</td><td>Chicago</td><td>20°C</td><td class="num">65%</td><td>High</td><td>Dim</td><td style="text-align:right"><span class="btn-ghost">View</span></td></tr>
+                <tr><td class="sub">2025-03-18 10:15</td><td>Houston</td><td>28°C</td><td class="num">50%</td><td>Low</td><td>Normal</td><td style="text-align:right"><span class="btn-ghost">View</span></td></tr>
+                <tr><td class="sub">2025-03-18 10:20</td><td>Miami</td><td>30°C</td><td class="num">70%</td><td>Medium</td><td>Bright</td><td style="text-align:right"><span class="btn-ghost">View</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sensor Health Trend -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Sensor Health Trend</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="ctrlrow" style="justify-content:flex-end">
+            <span class="sel" style="min-width:160px">TRAC#9299<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            <div class="field"><span class="inp">Select Date</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></div>
+          </div>
+          <div class="empty">No data available</div>
+        </div>
+
+        <!-- Tracker Comparison -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Tracker Comparison</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="ctrlrow">
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 13V5a2 2 0 014 0v8a4 4 0 11-4 0z"/></svg></span>
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3s6 7 6 11a6 6 0 11-12 0c0-4 6-11 6-11z"/></svg></span>
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M6 6l1.4 1.4M16.6 16.6L18 18M6 18l1.4-1.4M16.6 7.4L18 6"/></svg></span>
+            <span class="stoggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h3l2-5 4 10 2-5h5"/></svg></span>
+            <span class="stoggle on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          </div>
+          <div class="map">
+            <div class="road" style="top:30%;left:-10%;width:85%;height:14px;transform:rotate(-10deg)"></div>
+            <div class="road" style="top:66%;left:0;width:100%;height:16px;transform:rotate(5deg)"></div>
+            <div class="road" style="top:5%;left:64%;width:10px;height:92%;transform:rotate(7deg)"></div>
+            <div class="water" style="top:58%;right:0;width:260px;height:160px"></div>
+            <div class="full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+            <div class="recenter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div class="attr">Map data ©2026 Google</div>
+          </div>
+        </div>
+
+        <div class="group-title">Shipments Widgets</div>
+
+        <!-- Shipment Overview -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Shipment Overview</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="stats c6">
+            <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All</div><div class="s-val num">13</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot live"></span>Upcoming</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>In Transit</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Delayed</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Completed</div><div class="s-val num">11</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Canceled</div><div class="s-val num">1</div></div>
+          </div>
+        </div>
+
+        <!-- Completed Shipments -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Completed Shipments</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="ctrlrow">
+            <span class="sel">Final Status<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            <div class="field"><span class="inp">Select Date Range</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></div>
+            <div class="field search"><svg class="sicon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="inp">Shipment Id</span></div>
+          </div>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Shipment Id</th><th>Completed At</th><th>Final Status</th><th style="text-align:right">View Details</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">SHIP#384580</td><td class="dash">—</td><td><span class="pill pos"><span class="d"></span>completed</span></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#439419</td><td class="dash">—</td><td><span class="pill pos"><span class="d"></span>completed</span></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#559138</td><td class="dash">—</td><td><span class="pill pos"><span class="d"></span>completed</span></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#603538</td><td class="dash">—</td><td><span class="pill pos"><span class="d"></span>completed</span></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#3686</td><td class="dash">—</td><td><span class="pill pos"><span class="d"></span>completed</span></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Shipment Progress Timeline -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Shipment Progress Timeline</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="ctrlrow">
+            <span class="sel">Final Status<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            <div class="field"><span class="inp">Select Date Range</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></div>
+            <div class="field search"><svg class="sicon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="inp">Shipment Id</span></div>
+          </div>
+          <div class="tablewrap">
+            <table class="tl">
+              <thead><tr><th>Shipment</th><th>Upcoming</th><th>In Transit</th><th>Delayed</th><th>Canceled</th><th>Completed</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td class="mono">SHIP#384580</td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-29<br>05:08 PM</div></td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-29<br>05:08 PM</div></td>
+                  <td><span class="tick none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span></td>
+                  <td><span class="tick none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span></td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-29<br>06:55 PM</div></td>
+                </tr>
+                <tr>
+                  <td class="mono">SHIP#439419</td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-28<br>11:11 PM</div></td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-28<br>11:14 PM</div></td>
+                  <td><span class="tick none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span></td>
+                  <td><span class="tick none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span></td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-28<br>11:39 PM</div></td>
+                </tr>
+                <tr>
+                  <td class="mono">SHIP#559138</td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-25<br>10:46 PM</div></td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-27<br>11:32 PM</div></td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-27<br>11:35 PM</div></td>
+                  <td><span class="tick none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span></td>
+                  <td><span class="tick done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l5 5L20 6"/></svg></span><div class="ts">2026-05-28<br>12:39 AM</div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Shipment Log -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Recent Shipment Log</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="chips">
+            <span class="chip on">All</span><span class="chip">In Transit</span><span class="chip">Completed</span><span class="chip">Delayed</span><span class="chip">Canceled</span>
+          </div>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Shipment Id</th><th>Current Status</th><th>Date/Time</th><th style="text-align:right">Actions</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">SHIP#384580</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="dt2"><div class="d1">May 29 2026</div><div class="d2">at 06:55 PM</div></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#439419</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="dt2"><div class="d1">May 28 2026</div><div class="d2">at 11:39 PM</div></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#559138</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="dt2"><div class="d1">May 28 2026</div><div class="d2">at 12:39 AM</div></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#603538</td><td><span class="pill pos"><span class="d"></span>Completed</span></td><td class="dt2"><div class="d1">May 28 2026</div><div class="d2">at 12:40 AM</div></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+                <tr><td class="mono">SHIP#507327</td><td><span class="pill live"><span class="d"></span>Upcoming</span></td><td class="dt2"><div class="d1">May 11 2026</div><div class="d2">at 11:58 PM</div></td><td style="text-align:right"><span class="btn-out">View Details</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Shipment Live Map -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Shipment Live Map</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="ctrlrow">
+            <span class="sel">Final Status<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span>
+            <div class="field search"><svg class="sicon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="inp">Shipment Id</span></div>
+            <div class="field search"><svg class="sicon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="inp">Tracker Id</span></div>
+          </div>
+          <div class="map">
+            <div class="water" style="top:0;right:-5%;width:60%;height:120%;transform:rotate(-18deg)"></div>
+            <div class="road" style="top:40%;left:-5%;width:60%;height:8px;transform:rotate(-20deg)"></div>
+            <div class="attr">Map data ©2026 Google</div>
+            <div class="full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+            <div class="recenter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="9"/></svg></div>
+          </div>
+        </div>
+
+        <div class="group-title">Fleets Widgets</div>
+
+        <!-- Fleet Summary -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Fleet Summary</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="stats c6">
+            <div class="stat on"><div class="s-lbl"><span class="dot neutral"></span>All</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot pos"></span>Linked</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neutral"></span>Not Linked</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot live"></span>Moving</div><div class="s-val num">1</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot warn"></span>Idle</div><div class="s-val num">0</div></div>
+            <div class="stat"><div class="s-lbl"><span class="dot neg"></span>Stopped</div><div class="s-val num">0</div></div>
+          </div>
+          <div class="caption">Snapshot of your entire fleets's current operational status.</div>
+        </div>
+
+        <!-- Interactive Fleet Location Map -->
+        <div class="wcard">
+          <div class="whead"><span class="wtitle">Interactive Fleet Location Map</span><button class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="map">
+            <div class="road" style="top:30%;left:-10%;width:80%;height:14px;transform:rotate(-16deg)"></div>
+            <div class="road" style="top:62%;left:0;width:100%;height:16px;transform:rotate(8deg)"></div>
+            <div class="road" style="top:5%;left:64%;width:11px;height:92%;transform:rotate(6deg)"></div>
+            <div class="water" style="top:8%;left:6%;width:130px;height:95px"></div>
+            <div class="pin" style="top:46%;left:34%"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z" fill="#0f6e56" stroke="#7fd9bd" stroke-width="1.3"/><path d="M12 6.5l3 1.6v1.9c0 1.9-1.3 3-3 3.4-1.7-.4-3-1.5-3-3.4V8.1z" fill="#7fd9bd"/></svg></div>
+            <div class="stn" style="top:50%;left:80%"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="4" width="12" height="13" rx="2"/><path d="M8 21l2-3M16 21l-2-3"/></svg></div>
+            <div class="full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></div>
+            <div class="recenter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div class="attr">Map data ©2026 Google</div>
+          </div>
+        </div>
+
+        <div class="note">Widgets page · frozen Novira Design System v1.0 · sub-nav, widget cards, KPI overviews, controls, tables, timeline &amp; maps preserved 1:1 — skin only.</div>
+
+      </div>
+    </main>
+  </div>
+</div>
+<script src="prototype-links.js"></script>
+</body>
+</html>

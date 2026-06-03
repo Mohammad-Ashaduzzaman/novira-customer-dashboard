@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Novira — Subscriptions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#15171c; --ink-2:#5a616c; --ink-3:#929aa3; --ink-4:#aeb5bd;
+    --canvas:#edf0ee; --surface:#ffffff; --surface-2:#f7f9f8;
+    --hairline:#e7eae8; --hairline-soft:rgba(21,23,28,.05);
+    --accent:#0f6e56; --accent-2:#1b8567; --mint:#7fd9bd;
+    --rail:#121317; --rail-2:#181a20; --rail-line:rgba(255,255,255,.07); --rail-txt:#9aa1ab; --rail-txt-hi:#e9ece9; --rail-muted:rgba(255,255,255,.34);
+    --pos:#0f6e56; --live:#1f9e7c; --neutral:#7c828c; --warn:#b07a1e; --neg:#bb453c;
+    --pos-t:rgba(15,110,86,.10); --live-t:rgba(31,158,124,.12); --neutral-t:rgba(124,130,140,.12); --warn-t:rgba(176,122,30,.13); --neg-t:rgba(187,69,60,.10);
+    --r-panel:15px; --r-ctrl:12px; --r-sm:8px; --r-pill:999px;
+    --sh:0 1px 2px rgba(21,23,28,.03), 0 16px 44px -24px rgba(21,23,28,.22);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased}
+  body{font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.45;font-variant-numeric:tabular-nums;
+    background:radial-gradient(1200px 420px at 72% -8%,rgba(127,217,189,.05),transparent 60%),var(--canvas);min-height:100vh}
+  .num{font-feature-settings:"tnum" 1}
+  .app{display:grid;grid-template-columns:74px 1fr;min-height:100vh}
+
+  .side{background:linear-gradient(180deg,var(--rail),var(--rail-2));position:sticky;top:0;height:100vh;display:flex;flex-direction:column;color:var(--rail-txt)}
+  .brand{display:flex;align-items:center;justify-content:center;padding:20px 0 16px}
+  .brand .mark{width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;color:#dfe4e0;background:linear-gradient(150deg,#23262e,#15171c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 6px 16px -8px rgba(0,0,0,.6)}
+  .nav{padding:8px;display:flex;flex-direction:column;gap:4px;overflow-y:auto;flex:1;align-items:center}
+  .nav a{width:46px;height:44px;display:grid;place-items:center;border-radius:12px;color:var(--rail-txt);text-decoration:none;position:relative;transition:.15s}
+  .nav a svg{width:19px;height:19px;flex:none;stroke-width:1.7;opacity:.85}
+  .nav a:hover{background:rgba(255,255,255,.05);color:var(--rail-txt-hi)}
+  .nav a.active{background:rgba(127,217,189,.12);color:var(--mint)}
+  .nav a.active svg{opacity:1}
+  .nav a.active::before{content:"";position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:22px;border-radius:0 3px 3px 0;background:var(--mint)}
+  .side-foot{padding:10px 8px 16px;display:flex;justify-content:center}
+  .help{width:46px;height:44px;display:grid;place-items:center;border:1px solid var(--rail-line);background:rgba(255,255,255,.02);border-radius:12px;color:var(--rail-txt);cursor:pointer}.help svg{width:18px;height:18px}
+
+  .main{display:flex;flex-direction:column;min-width:0}
+  .topbar{height:72px;display:flex;align-items:center;gap:14px;padding:0 34px}
+  .back{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--ink-2);cursor:pointer;background:var(--surface);box-shadow:0 1px 2px rgba(21,23,28,.05);border:none}
+  .back:hover{color:var(--ink)}.back svg{width:19px;height:19px}
+  .page-title{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .spacer{margin-left:auto}
+  .topcluster{display:flex;align-items:center;gap:12px}
+  .plan{display:flex;align-items:center;gap:11px;background:var(--ink);color:#fff;padding:9px 15px;border-radius:11px;box-shadow:var(--sh)}
+  .plan svg{width:16px;height:16px;color:rgba(255,255,255,.62)}
+  .plan .pl-lbl{font-size:9.5px;color:rgba(255,255,255,.55);font-weight:500;line-height:1.1}
+  .plan .pl-val{font-size:13px;font-weight:600;line-height:1.15}
+  .divider{width:1px;height:26px;background:var(--hairline)}
+  .icon-btn{width:42px;height:42px;border-radius:12px;background:var(--surface);display:grid;place-items:center;color:var(--ink-2);cursor:pointer;position:relative;box-shadow:0 1px 2px rgba(21,23,28,.05);border:none}
+  .icon-btn:hover{color:var(--ink)}.icon-btn svg{width:18px;height:18px}
+  .badge{position:absolute;top:-4px;right:-4px;background:var(--neg);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;border:2px solid var(--canvas)}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#1b8567);box-shadow:0 2px 8px -2px rgba(15,110,86,.5);border:2px solid #fff}
+
+  .content{padding:6px 34px 48px;display:flex;flex-direction:column;gap:20px}
+  .panel{background:var(--surface);border-radius:var(--r-panel);box-shadow:var(--sh)}
+  .pad{padding:22px 26px}
+
+  /* hero */
+  .hero{padding:16px 26px}
+  .hero h1{font-size:19px;font-weight:700;letter-spacing:-.02em}
+  .hero p{font-size:13.5px;color:var(--ink-2);margin-top:6px}
+
+  /* summary cards */
+  .band{border:1px solid var(--hairline);border-radius:14px;overflow:hidden;margin-bottom:24px}
+  .band-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;background:linear-gradient(135deg,rgba(127,217,189,.12),var(--surface-2))}
+  .bh-plan{display:flex;align-items:center;gap:11px;font-size:20px;font-weight:700;color:var(--accent);letter-spacing:-.02em;line-height:1}
+  .bh-meta{font-size:12.5px;color:var(--ink-2);margin-top:8px}
+  .band-body{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--hairline)}
+  .bcell{padding:16px 20px;border-right:1px solid var(--hairline);display:flex;flex-direction:column}
+  .bcell:last-child{border-right:none}
+  .bcell .sc-val{font-size:18px;margin-top:10px}
+  .usage-txt{font-size:18px;font-weight:700;letter-spacing:-.02em;margin-top:10px}
+  .usage-txt .accent{color:var(--accent)}.usage-txt .unit{font-size:13px;font-weight:600;color:var(--ink-3)}
+  .bar{height:8px;border-radius:99px;background:var(--surface-2);border:1px solid var(--hairline);overflow:hidden;margin-top:10px}
+  .bar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+  .sc-top{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:22px}
+  .sc-lbl{font-size:12px;font-weight:600;color:var(--ink-2)}
+  .sc-top svg{width:17px;height:17px;color:var(--ink-3)}
+  .sc-val{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:12px;line-height:1.1}
+  .sc-val.accent{color:var(--accent)}
+  .sc-val .unit{font-size:14px;font-weight:600;color:var(--ink-3)}
+  .sc-mid{font-size:12px;color:var(--ink-2);margin-top:7px}
+  .sc-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:14px}
+  .sc-sub{font-size:11.5px;color:var(--ink-3)}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill)}
+  .pill .d{width:6px;height:6px;border-radius:50%}
+  .pill.pos{color:var(--pos);background:var(--pos-t)}.pill.pos .d{background:var(--pos)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:var(--r-sm);font-weight:600;font-size:12px;cursor:pointer;border:1px solid transparent;font-family:inherit}
+  .btn-out{background:var(--surface);color:var(--ink);border-color:var(--hairline);padding:7px 14px}.btn-out:hover{border-color:#d7dcd9;background:var(--surface-2)}
+
+  /* table */
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4);padding:0 12px 12px;white-space:nowrap}
+  tbody td{padding:13px 12px;font-size:12.5px;color:var(--ink-2);vertical-align:top}
+  tbody tr{transition:background .12s}
+  tbody tr:hover td{background:var(--surface-2)}
+  tbody tr:hover td:first-child{border-radius:8px 0 0 8px}tbody tr:hover td:last-child{border-radius:0 8px 8px 0}
+  .activerow td{background:rgba(127,217,189,.12)}
+  .activerow:hover td{background:rgba(127,217,189,.16)}
+  .activerow td:first-child{box-shadow:inset 3px 0 0 var(--accent);border-radius:8px 0 0 8px}
+  .activerow td:last-child{border-radius:0 8px 8px 0}
+  .sno{color:var(--ink-3);font-weight:600}
+  .link{color:var(--accent);font-weight:600;cursor:pointer}
+  .mono{font-weight:600;color:var(--accent);letter-spacing:-.01em;white-space:nowrap;cursor:pointer}
+  .amt{font-weight:600;color:var(--ink);white-space:nowrap}
+  .dt2 .d1{color:var(--ink);font-weight:500;white-space:nowrap}.dt2 .d2{color:var(--ink-3);font-size:11px;white-space:nowrap}
+  .odl{white-space:nowrap}.odl .v{color:var(--ink-2)}
+  .nowrap{white-space:nowrap}
+
+  .tfoot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 12px 2px;flex-wrap:wrap;border-top:1px solid var(--hairline-soft);margin-top:8px}
+  .tfoot .meta{font-size:12px;color:var(--ink-3)}
+  .pager{display:flex;align-items:center;gap:6px}
+  .pg{min-width:34px;height:34px;padding:0 8px;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;border:1px solid transparent}
+  .pg:hover{background:var(--surface-2)}.pg.on{background:var(--accent);color:#fff}.pg.arr{color:var(--ink-4)}.pg.txt{color:var(--accent)}
+
+  /* support footer */
+  .support{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:20px 26px}
+  .support h3{font-size:18px;font-weight:700;letter-spacing:-.015em}
+  .support p{font-size:13px;color:var(--ink-2);margin-top:6px}
+  .support .acts{display:flex;gap:10px}
+  .btn-out.lg{padding:11px 20px;font-size:13.5px;border-radius:var(--r-ctrl)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="side">
+    <div class="brand"><div class="mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4z"/></svg></div></div>
+    <nav class="nav">
+      <a href="#" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></a>
+      <a href="#" title="Trackers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></a>
+      <a href="#" title="Shipments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7h11v8H3z"/><path d="M14 10h4l3 3v2h-7z"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/></svg></a>
+      <a href="#" title="Fleets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 8h13v9H2z"/><path d="M15 11h4l3 3v3h-7z"/><circle cx="6" cy="18" r="1.8"/><circle cx="18" cy="18" r="1.8"/></svg></a>
+      <a href="#" title="Drivers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/></svg></a>
+      <a href="#" title="Alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg></a>
+      <a href="#" title="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg></a>
+      <a href="#" title="Widgets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6c2-2 6-2 8 0 2-2 6-2 8 0v12c-2-2-6-2-8 0-2-2-6-2-8 0V6z"/></svg></a>
+      <a href="#" title="Orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 5h18v4H3z"/><path d="M5 9v10h14V9"/><path d="M9 13h6"/></svg></a>
+      <a href="#" title="Reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></a>
+      <a href="#" title="Access Control"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></a>
+    </nav>
+    <div class="side-foot"><button class="help" title="Help & Support"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></button></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <span class="page-title">Subscriptions</span>
+      <span class="spacer"></span>
+      <div class="topcluster">
+        <div class="plan"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7l4 3 5-6 5 6 4-3-2 12H5L3 7z"/></svg><div><div class="pl-lbl">Current Plan</div><div class="pl-val">Ai Navigator</div></div></div>
+        <span class="divider"></span>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a6 6 0 016 6c0 5 2 6 2 6H4s2-1 2-6a6 6 0 016-6z"/><path d="M10 19a2 2 0 004 0"/></svg><span class="badge">99+</span></button>
+        <button class="icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg></button>
+        <div class="avatar"></div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- HERO -->
+      <div class="panel hero">
+        <h1>Manage All Your Subscriptions in One Place</h1>
+        <p>Track every device, every payment, every renewal — with complete clarity.</p>
+      </div>
+
+      <!-- MAIN PANEL: summary cards + invoices -->
+      <div class="panel pad">
+        <div class="band">
+          <div class="band-head">
+            <div>
+              <div class="bh-plan">Ai Navigator <span class="pill pos"><span class="d"></span>Active</span></div>
+              <div class="bh-meta">7 linked devices · $49.99/device/month · Across all devices</div>
+            </div>
+            <span class="btn btn-out">Update</span>
+          </div>
+          <div class="band-body">
+            <div class="bcell">
+              <div class="sc-top"><span class="sc-lbl">Data Usage</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+              <div class="usage-txt"><span class="accent">5.06</span> <span class="unit">/ 1200 MB</span></div>
+              <div class="bar"><span style="width:1.5%"></span></div>
+              <div class="sc-foot"><span class="sc-sub">Data Over Limit: 0 MB</span><span class="btn btn-out">View</span></div>
+            </div>
+            <div class="bcell">
+              <div class="sc-top"><span class="sc-lbl">Next Payment Due</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></div>
+              <div class="sc-val">Jun 05, 2026</div>
+              <div class="sc-foot"><span class="sc-sub">Upcoming renewal date</span></div>
+            </div>
+            <div class="bcell">
+              <div class="sc-top"><span class="sc-lbl">Default Payment Method</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg></div>
+              <div class="sc-val">Stripe Link</div>
+              <div class="sc-foot"><span class="sc-sub">Saved wallet</span><span class="btn btn-out">Update</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>S No.</th><th>Invoice Number</th><th>Billing Period</th><th>Plan</th><th>Quantity</th><th>Over Data Limit</th><th>Total Amount</th><th>Status</th><th>Invoice Date</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr class="activerow"><td class="sno num">1</td><td class="mono">LRGGQDCQ-0015</td><td class="nowrap">May 22 2026 - Jun 05 2026</td><td class="nowrap">Ai Navigator</td><td class="num">7</td><td class="odl"><span class="v">0 MB</span> <span class="link">View</span></td><td class="amt">$511.66</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">May 29 2026</div><div class="d2">at 02:40 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">2</td><td class="mono">LRGGQDCQ-0014</td><td class="nowrap">May 22 2026 - May 29 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 MB</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">May 22 2026</div><div class="d2">at 02:40 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">3</td><td class="mono">LRGGQDCQ-0013</td><td class="nowrap">May 15 2026 - May 22 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 MB</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">May 15 2026</div><div class="d2">at 02:41 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">4</td><td class="mono">LRGGQDCQ-0012</td><td class="nowrap">May 08 2026 - May 15 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">1 Device</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">May 08 2026</div><div class="d2">at 02:40 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">5</td><td class="mono">LRGGQDCQ-0011</td><td class="nowrap">May 01 2026 - May 08 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 Device</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">May 01 2026</div><div class="d2">at 02:40 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">6</td><td class="mono">LRGGQDCQ-0010</td><td class="nowrap">Apr 24 2026 - May 01 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 Device</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">Apr 24 2026</div><div class="d2">at 02:40 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">7</td><td class="mono">LRGGQDCQ-0009</td><td class="nowrap">Apr 17 2026 - Apr 24 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 Device</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">Apr 17 2026</div><div class="d2">at 02:41 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">8</td><td class="mono">LRGGQDCQ-0006</td><td class="nowrap">Apr 10 2026 - Apr 17 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 Device</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">Apr 10 2026</div><div class="d2">at 02:40 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">9</td><td class="mono">LRGGQDCQ-0004</td><td class="nowrap">Apr 10 2026 - Apr 17 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 Device</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">Apr 10 2026</div><div class="d2">at 02:28 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+              <tr><td class="sno num">10</td><td class="mono">LRGGQDCQ-0003</td><td class="nowrap">Apr 10 2026 - Apr 17 2026</td><td class="nowrap">Ai Explorer</td><td class="num">2</td><td class="odl"><span class="v">0 Device</span> <span class="link">View</span></td><td class="amt">$39.98</td><td><span class="pill pos"><span class="d"></span>Paid</span></td><td class="dt2"><div class="d1">Apr 10 2026</div><div class="d2">at 01:47 AM</div></td><td><span class="btn btn-out">Download</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tfoot">
+          <span class="meta">Total List: 39</span>
+          <span class="meta">Total Page: 4</span>
+          <div class="pager">
+            <span class="pg txt">First</span>
+            <span class="pg arr"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></span>
+            <span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">4</span>
+            <span class="pg arr"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
+            <span class="pg txt">Last</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPORT FOOTER -->
+      <div class="panel support">
+        <div>
+          <h3>Need help with billing or multiple subscriptions?</h3>
+          <p>Our support team responds within 24 hours.</p>
+        </div>
+        <div class="acts">
+          <span class="btn btn-out lg">Contact Support</span>
+          <span class="btn btn-out lg">Billing FAQ</span>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<script src="prototype-links.js"></script>
+</body>
+</html>

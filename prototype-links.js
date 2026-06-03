@@ -113,6 +113,15 @@
     return "";
   };
 
+  const isCloseIconButton = (button) => {
+    if (button.matches("[data-detail-close]")) {
+      return true;
+    }
+
+    const paths = [...button.querySelectorAll("path")].map((path) => path.getAttribute("d") || "").join(" ");
+    return paths.includes("M6 6l12 12") || paths.includes("M18 6L6 18");
+  };
+
   const fileName = (href) => {
     try {
       return new URL(href, window.location.href).pathname.split("/").pop().toLowerCase() || "index.html";
@@ -812,18 +821,18 @@
     }
   });
 
-  document.querySelectorAll(".h-act .iconbtn").forEach((button, index, buttons) => {
+  document.querySelectorAll(".h-act .iconbtn").forEach((button) => {
     if (!currentPage.endsWith("-details.html")) {
       return;
     }
 
-    if (index === buttons.length - 1) {
+    if (isCloseIconButton(button)) {
       button.setAttribute("aria-label", "Close detail view");
       button.setAttribute("title", "Close detail view");
       button.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        window.location.href = detailBackRoute();
+        window.location.assign(detailBackRoute());
       });
       return;
     }

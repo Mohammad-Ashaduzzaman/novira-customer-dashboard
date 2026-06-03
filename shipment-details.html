@@ -118,7 +118,7 @@
         <div class="h-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h11v8H3z"/><path d="M14 10h4l3 3v2h-7z"/><circle cx="7" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/></svg></div>
         <div><div class="h-ey">Shipment ID</div><div class="h-id">SHIP#384580</div></div>
       </div>
-      <button class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button class="x" data-detail-close type="button" aria-label="Close detail view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
 
     <div class="m-body" id="mbody">
@@ -246,6 +246,6 @@
     var body=document.getElementById('mbody'),head=document.getElementById('mhead');
     body.addEventListener('scroll',function(){head.classList.toggle('scrolled',body.scrollTop>4)});
   </script>
-<script src="prototype-links.js"></script>
+<script src="prototype-links.js?v=shipment-close-fix-20260603"></script>
 </body>
 </html>

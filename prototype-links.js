@@ -821,7 +821,7 @@
     }
   });
 
-  document.querySelectorAll(".h-act .iconbtn").forEach((button) => {
+  document.querySelectorAll(".h-act .iconbtn, .m-head .x").forEach((button) => {
     if (!currentPage.endsWith("-details.html")) {
       return;
     }

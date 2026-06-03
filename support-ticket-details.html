@@ -86,7 +86,7 @@
         <div class="h-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
         <div><div class="h-ey">Support Ticket</div><div class="h-id">SPT#645530</div></div>
       </div>
-      <button class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button class="x" data-detail-close type="button" aria-label="Close detail view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
 
     <div class="m-body" id="mbody">
@@ -157,8 +157,8 @@
     </div>
 
     <div class="m-foot">
-      <button class="btn btn-out">Close</button>
-      <button class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>Download Ticket</button>
+      <button class="btn btn-out" data-detail-close type="button">Close</button>
+      <button class="btn btn-secondary" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>Download Ticket</button>
     </div>
   </div>
 
@@ -166,6 +166,6 @@
     var body=document.getElementById('mbody'),head=document.getElementById('mhead');
     body.addEventListener('scroll',function(){head.classList.toggle('scrolled',body.scrollTop>4)});
   </script>
-<script src="prototype-links.js"></script>
+<script src="prototype-links.js?v=modal-audit-20260603"></script>
 </body>
 </html>

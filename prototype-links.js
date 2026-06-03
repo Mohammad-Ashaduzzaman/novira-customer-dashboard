@@ -122,6 +122,23 @@
     return paths.includes("M6 6l12 12") || paths.includes("M18 6L6 18");
   };
 
+  const isCloseControl = (button) => {
+    if (isCloseIconButton(button)) {
+      return true;
+    }
+
+    const label = clean([
+      button.getAttribute("aria-label"),
+      button.getAttribute("title"),
+      button.textContent
+    ].filter(Boolean).join(" "));
+
+    return label === "close" ||
+      label === "x" ||
+      label.includes("close detail") ||
+      label.includes("close modal");
+  };
+
   const fileName = (href) => {
     try {
       return new URL(href, window.location.href).pathname.split("/").pop().toLowerCase() || "index.html";
@@ -199,6 +216,104 @@
       .prototype-row-link .mono:first-child,
       .prototype-row-link td:first-child {
         color: var(--accent, #0f6e56);
+      }
+
+      .modal .btn,
+      .modal .btn-fill,
+      .prototype-popup .btn {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border: 1px solid transparent;
+        border-radius: var(--r-ctrl, 12px);
+        font: 600 13px/1 "Hanken Grotesk", system-ui, sans-serif;
+        cursor: pointer;
+        box-sizing: border-box;
+        text-decoration: none;
+      }
+
+      .modal .btn svg,
+      .modal .btn-fill svg,
+      .prototype-popup .btn svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .modal .btn-out,
+      .prototype-popup .btn-out {
+        background: var(--surface, #fff);
+        color: var(--ink, #15171c);
+        border-color: var(--hairline, #e7eae8);
+      }
+
+      .modal .btn-out:hover,
+      .prototype-popup .btn-out:hover {
+        border-color: #d7dcd9;
+        background: var(--surface-2, #f7f9f8);
+      }
+
+      .modal .btn-primary,
+      .prototype-popup .btn-primary {
+        background: var(--accent, #0f6e56);
+        color: #fff;
+      }
+
+      .modal .btn-primary:hover,
+      .prototype-popup .btn-primary:hover {
+        background: #0c5b47;
+      }
+
+      .modal .btn-secondary,
+      .modal .btn-fill {
+        background: #3f444c;
+        color: #fff;
+      }
+
+      .modal .btn-secondary:hover,
+      .modal .btn-fill:hover {
+        background: #2c3036;
+      }
+
+      .modal .x,
+      .modal .iconbtn,
+      .prototype-popup-close {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        padding: 0;
+        border: 1px solid var(--hairline, #e7eae8);
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        color: var(--ink-3, #929aa3);
+        background: var(--surface-2, #f7f9f8);
+        cursor: pointer;
+        box-sizing: border-box;
+      }
+
+      .modal .x:hover,
+      .modal .iconbtn:hover,
+      .prototype-popup-close:hover {
+        color: var(--ink, #15171c);
+        background: #eef1ef;
+      }
+
+      .modal .x svg,
+      .modal .iconbtn svg,
+      .prototype-popup-close svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .modal .m-foot {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 24px;
       }
 
       .prototype-toast {
@@ -782,6 +897,8 @@
     });
   };
 
+  ensurePrototypeStyles();
+
   document.querySelectorAll('a[href="#"], a:not([href])').forEach((link) => {
     makeClickable(link, routeFor(link));
   });
@@ -821,30 +938,39 @@
     }
   });
 
-  document.querySelectorAll(".h-act .iconbtn, .m-head .x").forEach((button) => {
-    if (!currentPage.endsWith("-details.html")) {
-      return;
-    }
+  if (currentPage.endsWith("-details.html")) {
+    document.querySelectorAll(".modal button, .modal [role=\"button\"], .h-act .iconbtn, .m-head .x").forEach((button) => {
+      if (button.dataset.detailCloseBound) {
+        return;
+      }
 
-    if (isCloseIconButton(button)) {
-      button.setAttribute("aria-label", "Close detail view");
-      button.setAttribute("title", "Close detail view");
+      if (isCloseControl(button)) {
+        button.dataset.detailClose = "true";
+        button.dataset.detailCloseBound = "true";
+        button.setAttribute("type", "button");
+        button.setAttribute("aria-label", "Close detail view");
+        button.setAttribute("title", "Close detail view");
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          window.location.assign(detailBackRoute());
+        });
+        return;
+      }
+
+      if (!button.matches(".h-act .iconbtn")) {
+        return;
+      }
+
+      button.setAttribute("aria-label", "Open settings popup");
+      button.setAttribute("title", "Open settings popup");
       button.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-        window.location.assign(detailBackRoute());
+        openSettingsPopup();
       });
-      return;
-    }
-
-    button.setAttribute("aria-label", "Open settings popup");
-    button.setAttribute("title", "Open settings popup");
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      openSettingsPopup();
     });
-  });
+  }
 
   document.querySelectorAll(".h-act .btn-primary, .toolbar .btn-primary, .create").forEach((button) => {
     if (!clean(button.textContent).includes("upgrade") && !clean(button.textContent).includes("create") && !clean(button.textContent).includes("add")) {
@@ -1005,7 +1131,7 @@
     });
   });
 
-  document.querySelectorAll(".toolbtn, .full, .recenter, .btn-out:not([data-prototype-link])").forEach((control) => {
+  document.querySelectorAll(".toolbtn, .full, .recenter, .btn-out:not([data-prototype-link]):not([data-detail-close])").forEach((control) => {
     control.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
